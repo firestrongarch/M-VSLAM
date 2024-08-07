@@ -1,0 +1,26 @@
+%YAML:1.0
+---
+cam0:
+    K: !!opencv-matrix
+        rows: 3
+        cols: 3
+        dt: d
+        data: [ 718.856, 0, 607.1928, 
+                0, 718.856, 185.2157, 
+                0 , 0, 1 ]
+cam1:
+    K: !!opencv-matrix
+        rows: 3
+        cols: 3
+        dt: d
+        data: [ 718.856, 0, 607.1928, 
+                0, 718.856, 185.2157, 
+                0 , 0, 1 ]
+    T_01: !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: [ 1, 0, 0, -0.537166, 
+                0, 1, 0, 0, 
+                0, 0, 1, 0, 
+                0, 0, 0, 1 ]

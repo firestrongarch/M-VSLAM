@@ -1,0 +1,9 @@
+*build*
+.idea
+.vscode
+.cache
+lib
+bin
+release
+build_release
+.VSCodeCounter
