@@ -14,6 +14,8 @@ public:
     void InsertMapPoint(std::shared_ptr<MapPoint> map_point);
     const MapPoints& GetAllMapPoints();
 
+    void ShowCurrentKeyFrame();
+
 private:
     MapPoints all_map_points_;
     MapPoints active_map_point_;

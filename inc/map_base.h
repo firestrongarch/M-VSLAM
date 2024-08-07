@@ -11,4 +11,6 @@ public:
     virtual void InsertKeyFrame(std::shared_ptr<KeyFrame> key_frame){}
     virtual void InsertMapPoint(std::shared_ptr<MapPoint> map_point){}
     virtual const MapPoints& GetAllMapPoints() = 0;
+
+    virtual void ShowCurrentKeyFrame() {};
 };

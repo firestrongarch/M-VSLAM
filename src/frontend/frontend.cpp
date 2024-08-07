@@ -46,6 +46,7 @@ void Frontend::Track()
         cv::line(show, pt1, pt2, cv::Scalar(0, 0, 255), 1);
     }
     cv::imshow("LK", show);
+    map_->ShowCurrentKeyFrame();
     cv::waitKey(10);
 
     // 最小化重投影误差
@@ -76,5 +77,7 @@ void Frontend::Track()
             .next_pose = right_camera_->GetPose(),
             .current_pose_Twc = current_frame_->Pose().inverse()
         });
+
+        map_->InsertKeyFrame(std::make_shared<KeyFrame>(current_frame_));
     }
 }

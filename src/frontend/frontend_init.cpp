@@ -1,5 +1,7 @@
 #include "frontend.h"
 #include "frontend_template.hpp"
+#include "key_frame.h"
+#include <memory>
 #include <print>
 
 bool Frontend::Init()
@@ -19,9 +21,10 @@ bool Frontend::Init()
     // step2: create map
     if (InitMap()){
         track_status_ = GOOD;
+        map_->InsertKeyFrame(std::make_shared<KeyFrame>(current_frame_));
         return true;
     }
-    
+
     return false;
 }
 

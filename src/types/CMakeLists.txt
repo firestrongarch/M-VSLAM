@@ -5,7 +5,7 @@ add_library(slam_types SHARED
             feature.cpp
             map_point.cpp
             map.cpp)
-target_link_libraries(slam_types opencv_core)
+target_link_libraries(slam_types ${OpenCV_LIBS})
 
 # set(CPPCHECK_EXECUTABLE "/usr/bin/cppcheck")
 # # 将cppcheck添加到编译目标之后

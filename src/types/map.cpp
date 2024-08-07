@@ -1,8 +1,10 @@
 #include "map.h"
+#include <opencv2/highgui.hpp>
 
 void Map::InsertKeyFrame(std::shared_ptr<KeyFrame> key_frame)
 {
     current_keyframe_ = key_frame;
+    all_key_frames_.insert({key_frame->key_frame_id_, key_frame});
 }
 
 void Map::InsertMapPoint(std::shared_ptr<MapPoint> map_point)
@@ -15,4 +17,9 @@ void Map::InsertMapPoint(std::shared_ptr<MapPoint> map_point)
 const Map::MapPoints& Map::GetAllMapPoints()
 {
     return all_map_points_;
+}
+
+void Map::ShowCurrentKeyFrame()
+{
+    cv::imshow("current keyframe", current_keyframe_->left_image_);
 }
