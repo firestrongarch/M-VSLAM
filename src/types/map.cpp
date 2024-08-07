@@ -12,7 +12,7 @@ void Map::InsertMapPoint(std::shared_ptr<MapPoint> map_point)
     }
 }
 
-const Map::MapPointType& Map::GetAllMapPoints()
+const Map::MapPoints& Map::GetAllMapPoints()
 {
     return all_map_points_;
 }
