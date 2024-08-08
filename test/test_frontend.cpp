@@ -3,6 +3,7 @@
 #include <iostream>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
+#include "backend.h"
 #include "frontend.h"
 #include "camera.h"
 #include "map.h"
@@ -22,10 +23,13 @@ int main(int argc, char const *argv[])
     auto file = cv::FileStorage("../config/kitti_00.yaml",
                                       cv::FileStorage::READ);
     Frontend frontend;
+    Backend backend;
     Map::Ptr map = std::make_shared<Map>();
     UiPangolin::Ptr ui_pangolin = std::make_shared<UiPangolin>();
     ui_pangolin->SetMap(map);
+    backend.SetMap(map);
     auto ui_pangolin_thread = std::thread(&UiPangolin::Run,ui_pangolin);
+    auto backend_thread = std::thread(&Backend::Run,backend);
 
     frontend.SetUiPangolin(ui_pangolin);
 
@@ -64,6 +68,7 @@ int main(int argc, char const *argv[])
         frontend.RunBinocular(img_left, img_right,timestamp);
     }
 
+    backend_thread.join();
     ui_pangolin_thread.join();
     return 0;
 }

@@ -31,6 +31,7 @@ include_directories(/usr/include/eigen3)
 include_directories(inc)
 
 add_subdirectory(src/frontend)
+add_subdirectory(src/backend)
 add_subdirectory(src/types)
 add_subdirectory(src/ui)
 
