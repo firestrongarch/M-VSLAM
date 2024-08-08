@@ -16,6 +16,10 @@ public:
 
     void ShowCurrentKeyFrame();
 
+    auto CurrentKeyFrame(){
+        return current_keyframe_;
+    }
+
 private:
     MapPoints all_map_points_;
     MapPoints active_map_point_;

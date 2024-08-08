@@ -57,7 +57,7 @@ void UiPangolin::AddTrajectoryPose(const Sophus::SE3d &pose)
     traj_VO_.emplace_back(pose.translation().cast<float>());
 }
 
-void UiPangolin::SetMap(const MapBase::Ptr map)
+void UiPangolin::SetMap(const Map::Ptr map)
 {
     map_ = map;
 }

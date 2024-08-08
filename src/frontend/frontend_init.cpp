@@ -49,7 +49,7 @@ bool Frontend::InitMap()
     return true;
 }
 
-void Frontend::SetMap(const MapBase::Ptr map)
+void Frontend::SetMap(const Map::Ptr map)
 {
     map_ = map;
 }

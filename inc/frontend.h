@@ -2,7 +2,7 @@
 
 #include "frame.h"
 #include "camera.h"
-#include "map_base.h"
+#include "map.h"
 #include "ui_pangolin.h"
 #include <opencv2/core/types.hpp>
 #include <opencv2/features2d.hpp>
@@ -16,7 +16,7 @@ public:
     void SetCamera(const Camera::Ptr &left, const Camera::Ptr &right);
     void RunBinocular(const cv::Mat &left_image, const cv::Mat &right_iamge,
                       const double timestamp);
-    void SetMap(const MapBase::Ptr map);
+    void SetMap(const Map::Ptr map);
     void SetUiPangolin(const UiPangolin::Ptr ui_pangolin);
 
 private:                
@@ -61,7 +61,7 @@ private:
     std::shared_ptr<Frame> current_frame_;
 
     std::vector<std::shared_ptr<Feature>> features_left_;
-    std::shared_ptr<MapBase> map_;
+    std::shared_ptr<Map> map_;
     std::shared_ptr<UiPangolin> ui_pangolin_;
 
     Sophus::SE3d relative_motion_;
