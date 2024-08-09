@@ -2,19 +2,22 @@
 
 #include <memory>
 #include <semaphore>
-#include "map_base.h"
 #include "camera.h"
+#include "key_frame.h"
+#include "map_point.h"
 
-class Map : public MapBase
+class Map
 {
 public:
     using Ptr = std::shared_ptr<Map>;
-
+    using KeyFrames = std::unordered_map<unsigned long, std::shared_ptr<KeyFrame>>;
+    using MapPoints = std::unordered_map<unsigned long, std::shared_ptr<MapPoint>>;
     Map() = default;
 
     void InsertKeyFrame(std::shared_ptr<KeyFrame> key_frame);
     void InsertMapPoint(std::shared_ptr<MapPoint> map_point);
-    const MapPoints& GetAllMapPoints();
+    MapPoints GetAllMapPoints();
+    KeyFrames GetAllKeyFrames();
 
     void ShowCurrentKeyFrame();
 

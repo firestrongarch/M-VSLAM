@@ -14,7 +14,7 @@ void Map::InsertMapPoint(std::shared_ptr<MapPoint> map_point)
     }
 }
 
-const Map::MapPoints& Map::GetAllMapPoints()
+Map::MapPoints Map::GetAllMapPoints()
 {
     return all_map_points_;
 }

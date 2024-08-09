@@ -3,6 +3,9 @@
 #include <Eigen/Core>
 #include <memory>
 #include <mutex>
+#include <opencv2/core/types.hpp>
+#include <opencv2/opencv.hpp>
+#include <unordered_map>
 
 class MapPoint:public Eigen::Vector3d
 {
@@ -28,7 +31,6 @@ public:
     bool is_outlier_ = false;
 private:
     std::mutex mutex_pos_;
-    // std::list<std::weak_ptr<Feature>> active_observations_;
-    // std::list<std::weak_ptr<Feature>> observations_;
+    std::unordered_map<int, std::weak_ptr<cv::KeyPoint>> observers_;
 };
 

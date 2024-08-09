@@ -4,6 +4,7 @@
 #include <sophus/se3.hpp>
 #include <g2o/core/base_vertex.h>
 #include <g2o/core/base_unary_edge.h>
+#include <g2o/core/base_binary_edge.h>
 
 class VertexPose : public g2o::BaseVertex<6, Sophus::SE3d>
 {
@@ -88,4 +89,33 @@ public:
 private:
     Eigen::Vector3d _pos3d;
     Eigen::Matrix3d _K;
+};
+
+class EdgePoseXYZ : public g2o::BaseBinaryEdge<2, Eigen::Vector2d, VertexPose, VertexXYZ>
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
+    EdgePoseXYZ(const Eigen::Matrix3d &K, const Sophus::SE3d &cam_ext): _K(K)
+    {
+        _cam_ext = cam_ext;
+    }
+
+    virtual void computeError() override
+    {
+        const VertexPose *v0 = static_cast<VertexPose *>(_vertices[0]);
+        const VertexXYZ *v1 = static_cast<VertexXYZ *>(_vertices[1]);
+        Sophus::SE3d T = v0->estimate();
+        Eigen::Vector3d pos_pixel = _K * (_cam_ext * (T * v1->estimate()));
+        pos_pixel /= pos_pixel[2];
+        _error = _measurement - pos_pixel.head<2>();
+    }
+
+    virtual bool read(std::istream &in) override { return true; }
+
+    virtual bool write(std::ostream &out) const override { return true; }
+
+private:
+    Eigen::Matrix3d _K;
+    Sophus::SE3d _cam_ext;
 };
