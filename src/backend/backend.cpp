@@ -13,7 +13,12 @@ void Backend::Run()
     while (true)
     {
         map_->semaphore_.acquire();
-        std::cout << "ID: "<< map_->current_keyframe_->frame_id_ << std::endl;
+        for(auto& feature : map_->current_keyframe_->features_left_){
+            for(auto & kf : feature->map_point_.lock()->observers_){
+                std::cout<< " " <<kf.lock()->frame_id_;
+            }
+            std::cout<<std::endl;
+        }
     }
 }
 
