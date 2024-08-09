@@ -1,12 +1,12 @@
 #include "backend.h"
 #include <iostream>
-#include <thread>
+
 void Backend::Run()
 {
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        std::cout << "Backend thread running" << std::endl;
+        map_->semaphore_.acquire();
+        std::cout << "ID: "<< map_->current_keyframe_->frame_id_ << std::endl;
     }
 }
 

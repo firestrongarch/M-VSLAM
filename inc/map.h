@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <semaphore>
 #include "map_base.h"
 
 class Map : public MapBase
@@ -16,9 +17,9 @@ public:
 
     void ShowCurrentKeyFrame();
 
-    auto CurrentKeyFrame(){
-        return current_keyframe_;
-    }
+
+    std::binary_semaphore semaphore_{0};
+    std::shared_ptr<KeyFrame> current_keyframe_{nullptr};
 
 private:
     MapPoints all_map_points_;
@@ -27,7 +28,6 @@ private:
     KeyFrames all_key_frames_;
     KeyFrames active_key_frames_;
 
-    std::shared_ptr<KeyFrame> current_keyframe_{nullptr};
     unsigned int num_active_key_frames_;
 };
 

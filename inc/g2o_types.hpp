@@ -1,6 +1,7 @@
 #pragma once
 
 #define GLOG_USE_GLOG_EXPORT
+#include <sophus/se3.hpp>
 #include <g2o/core/base_vertex.h>
 #include <g2o/core/base_unary_edge.h>
 
