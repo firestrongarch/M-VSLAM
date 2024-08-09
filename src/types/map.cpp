@@ -5,6 +5,10 @@ void Map::InsertKeyFrame(std::shared_ptr<KeyFrame> key_frame)
 {
     current_keyframe_ = key_frame;
     all_key_frames_.insert({key_frame->key_frame_id_, key_frame});
+
+    for(auto &feature: key_frame->features_left_){
+        feature->map_point_.lock()->observers_.push_back(key_frame);
+    }
 }
 
 void Map::InsertMapPoint(std::shared_ptr<MapPoint> map_point)
@@ -17,6 +21,11 @@ void Map::InsertMapPoint(std::shared_ptr<MapPoint> map_point)
 Map::MapPoints Map::GetAllMapPoints()
 {
     return all_map_points_;
+}
+
+Map::KeyFrames Map::GetAllKeyFrames()
+{
+    return all_key_frames_;
 }
 
 void Map::ShowCurrentKeyFrame()

@@ -1,5 +1,6 @@
 #pragma once
 #include "frame_base.h"
+#include "feature.h"
 #include <memory>
 
 class Frame : public FrameBase
@@ -15,9 +16,10 @@ public:
     void SetRelativePose(const Sophus::SE3d &relative_pose);
     const Sophus::SE3d& RelativePose() const;
 
+    cv::Mat left_image_;
+    std::vector<std::shared_ptr<Feature>> features_left_;
     cv::Mat right_image_;
     std::vector<std::shared_ptr<Feature>> features_right_;
-    
 private:
     Sophus::SE3d relative_pose_;
     

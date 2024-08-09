@@ -3,9 +3,8 @@
 #include <Eigen/Core>
 #include <memory>
 #include <mutex>
-#include <opencv2/core/types.hpp>
-#include <opencv2/opencv.hpp>
-#include <unordered_map>
+#include "frame_base.h"
+#include <list>
 
 class MapPoint:public Eigen::Vector3d
 {
@@ -26,11 +25,10 @@ public:
     }
 
     unsigned long id_ = 0;
-    int active_observed_times_ = 0;
-    int observed_times_ = 0;
     bool is_outlier_ = false;
+
+    std::list<std::weak_ptr<FrameBase>> observers_;
 private:
     std::mutex mutex_pos_;
-    std::unordered_map<int, std::weak_ptr<cv::KeyPoint>> observers_;
 };
 

@@ -27,6 +27,7 @@ int Frontend::OpticalFlow(LkInfo info)
             Feature::Ptr next_feature = std::make_shared<Feature>();
             next_feature->pt = next_points.at(i);
             next_feature->map_point_ = feature->map_point_;
+
             info.next_features.emplace_back(next_feature);
         }else{
             feature->is_outlier_ = true;
