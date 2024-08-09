@@ -11,8 +11,6 @@
 
 int Frontend::Optimize(OptimizeInfo info)
 {
-    Eigen::Matrix3d K = left_camera_->GetK();
-
     g2o::SparseOptimizer optimizer;
     using BlockSolver = g2o::BlockSolver_6_3;
     using LinearSolver = g2o::LinearSolverDense<BlockSolver::PoseMatrixType>;
@@ -32,7 +30,7 @@ int Frontend::Optimize(OptimizeInfo info)
     for(auto &feature:info.features){
         std::shared_ptr<MapPoint> map_point = feature->map_point_.lock();
         auto pt = feature->pt;
-        auto edge = new EdgePose(map_point->Pos(),K);
+        auto edge = new EdgePose(map_point->Pos(),info.K);
         edge->setId(index);
         edge->setVertex(0,vertex_pose);
         edge->setMeasurement(Eigen::Vector2d(pt.x, pt.y));

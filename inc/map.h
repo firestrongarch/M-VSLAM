@@ -3,6 +3,7 @@
 #include <memory>
 #include <semaphore>
 #include "map_base.h"
+#include "camera.h"
 
 class Map : public MapBase
 {
@@ -20,6 +21,9 @@ public:
 
     std::binary_semaphore semaphore_{0};
     std::shared_ptr<KeyFrame> current_keyframe_{nullptr};
+
+    std::shared_ptr<Camera> left_camera_;
+    std::shared_ptr<Camera> right_camera_;
 
 private:
     MapPoints all_map_points_;

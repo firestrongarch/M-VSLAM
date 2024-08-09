@@ -1,7 +1,6 @@
 #pragma once
 
 #include "frame.h"
-#include "camera.h"
 #include "map.h"
 #include "ui_pangolin.h"
 #include <opencv2/core/types.hpp>
@@ -13,7 +12,6 @@ class Frontend
 {
 public:
     Frontend(/* args */) = default;
-    void SetCamera(const Camera::Ptr &left, const Camera::Ptr &right);
     void RunBinocular(const cv::Mat &left_image, const cv::Mat &right_iamge,
                       const double timestamp);
     void SetMap(const Map::Ptr map);
@@ -46,6 +44,7 @@ private:
     struct OptimizeInfo{
         std::vector<std::shared_ptr<Feature>>& features;
         Sophus::SE3d const & pose;
+        const Eigen::Matrix3d& K;
     };
     int Optimize(OptimizeInfo info);
 
@@ -55,8 +54,6 @@ private:
 
 private:
     TrackStatus track_status_{INIT};
-    std::shared_ptr<Camera> left_camera_;
-    std::shared_ptr<Camera> right_camera_;
     std::shared_ptr<Frame> last_frame_;
     std::shared_ptr<Frame> current_frame_;
 

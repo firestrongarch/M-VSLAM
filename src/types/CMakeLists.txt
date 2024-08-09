@@ -1,4 +1,5 @@
 add_library(slam_types SHARED
+            camera.cpp
             frame_base.cpp
             frame.cpp
             key_frame.cpp

@@ -49,7 +49,8 @@ int main(int argc, char const *argv[])
         Sophus::SE3d(Sophus::SO3d(), t_right)
     );
 
-    frontend.SetCamera(left, right);
+    map->left_camera_ = left;
+    map->right_camera_ = right;
     frontend.SetMap(map);
 
     /// load sequence frames

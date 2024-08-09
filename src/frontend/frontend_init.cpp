@@ -1,6 +1,7 @@
 #include "frontend.h"
 #include "frontend_template.hpp"
 #include "key_frame.h"
+#include "map.h"
 #include <memory>
 #include <print>
 
@@ -34,8 +35,8 @@ bool Frontend::InitMap()
     int nums = Triangulation({
         .prev_features = current_frame_->features_left_,
         .next_features = current_frame_->features_right_,
-        .prev_pose = left_camera_->GetPose(),
-        .next_pose = right_camera_->GetPose()
+        .prev_pose = map_->left_camera_->GetPose(),
+        .next_pose = map_->right_camera_->GetPose()
     });
 
     // 检测是否有足够多的点
@@ -57,11 +58,4 @@ void Frontend::SetMap(const Map::Ptr map)
 void Frontend::SetUiPangolin(const UiPangolin::Ptr ui_pangolin)
 {
     ui_pangolin_ = ui_pangolin;
-}
-
-void Frontend::SetCamera(const Camera::Ptr &left, const Camera::Ptr &right)
-{
-  assert(left != nullptr && right != nullptr);
-  left_camera_ = left;
-  right_camera_ = right;
 }

@@ -11,6 +11,8 @@ public:
     void SetMap(const Map::Ptr map);
     void Run();
 
+    void OptimizeActiveMap();
+
 private:
     Map::Ptr map_;
 };
