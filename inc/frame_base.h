@@ -8,6 +8,10 @@ public:
     void SetPose(const Sophus::SE3d &pose);
     Sophus::SE3d Pose();
 
+    virtual unsigned long Id(){
+        return frame_id_;
+    };
+
     unsigned long frame_id_{};
     double timestamp_{};
     

@@ -1,25 +1,29 @@
 #include "backend.h"
 #include "g2o_types.hpp"
+#include "map_point.h"
 #include <g2o/core/optimization_algorithm_levenberg.h>
 #include <g2o/core/robust_kernel_impl.h>
 #include <g2o/core/sparse_optimizer.h>
 #include <g2o/core/block_solver.h>
 #include <g2o/core/linear_solver.h>
 #include <g2o/solvers/csparse/linear_solver_csparse.h>
-#include <iostream>
+#include <memory>
 
 void Backend::Run()
 {
     while (true)
     {
         map_->semaphore_.acquire();
-        for(auto& feature : map_->current_keyframe_->features_left_){
-            for(auto & ob : feature->map_point_.lock()->observers_){
-                std::cout<< " " <<ob.frame.lock()->frame_id_;
-                std::cout<< " " <<ob.kp.lock()->pt;
-            }
-            std::cout<<std::endl;
-        }
+        // for(auto& feature : map_->current_keyframe_->features_left_){
+        //     for(auto & ob : feature->map_point_.lock()->observers_){
+        //         std::cout<< " " <<ob.frame.lock()->Id();
+        //         std::cout<< " " <<ob.kp.lock()->pt;
+        //     }
+        //     std::cout<<std::endl;
+        // }
+        OptimizeActiveMap();
+
+        map_->backend_finished_.release();
     }
 }
 
@@ -46,15 +50,17 @@ void Backend::OptimizeActiveMap()
         vertices_kfs.insert({kf->key_frame_id_, vertex});
 
         max_kf_id = std::max(max_kf_id, kf->key_frame_id_);
+        vertices_kfs.insert({kf->key_frame_id_, vertex});
     }
 
     Eigen::Matrix3d cam_K = map_->left_camera_->GetK();
+    Sophus::SE3d pose = map_->left_camera_->GetPose();
 
     int index = 1;
     double chi2_th = 5.891;
 
     std::unordered_map<unsigned long, VertexXYZ *> vertices_mps;
-    std::unordered_map<EdgePoseXYZ *, Feature::Ptr> edges_and_features;
+    std::unordered_map<EdgePoseXYZ *, std::weak_ptr<MapPoint>> edges_and_mps;
     for(auto &MP: MPs){
         auto mp = MP.second;
         VertexXYZ *v = new VertexXYZ;
@@ -64,10 +70,74 @@ void Backend::OptimizeActiveMap()
         vertices_mps.insert({mp->id_, v});
         optimizer.addVertex(v);
 
-        // // edges
-        // for(auto &obs: mp->observations_){
-        // }
+        // edges
+        for(auto &ob: mp->observers_){ 
+            auto kf = ob.frame.lock();
+            auto& pt = ob.kp.lock()->pt;
+
+            auto edge = new EdgePoseXYZ(cam_K, pose);
+            edge->setId(index);
+            try{
+                edge->setVertex(0, vertices_kfs.at(kf->Id()));
+                edge->setVertex(1, vertices_mps.at(mp->id_));
+            } catch (std::out_of_range &e){
+                std::cout<<"[Backend] "<<e.what()<<std::endl;
+            }
+
+            edge->setMeasurement(Eigen::Vector2d(pt.x, pt.y));
+            edge->setInformation(Eigen::Matrix2d::Identity());
+            auto rk = new g2o::RobustKernelHuber();
+            rk->setDelta(chi2_th);
+            edge->setRobustKernel(rk);
+            edges_and_mps.insert({edge, mp});
+            optimizer.addEdge(edge);
+            index++;
+        }
     }
+
+    // optimize
+    int cnt_outlier = 0, cnt_inlier = 0;
+    int iteration = 0;
+
+    while (iteration < 5){
+        optimizer.initializeOptimization();
+        optimizer.optimize(10);
+        cnt_outlier = 0;
+        cnt_inlier = 0;
+        // determine if we want to adjust the outlier threshold
+        for (auto &em : edges_and_mps){
+            if (em.first->chi2() > chi2_th){
+                cnt_outlier++;
+            }else{
+                cnt_inlier++;
+            }
+        }
+        double inlier_ratio = cnt_inlier / double(cnt_inlier + cnt_outlier);
+        if (inlier_ratio > 0.7){
+            break;
+        }else{
+            // chi2_th *= 2;
+            iteration++;
+        }
+    }
+
+    // process the outlier edges
+    // remove the link between the feature and the mappoint
+    for (auto &em : edges_and_mps){
+        if (em.first->chi2() > chi2_th){
+            std::puts("mp outlier");
+            em.second.lock()->is_outlier_ = true;
+        }
+    }
+
+    for (auto &v : vertices_kfs){
+      KFs.at(v.first)->SetPose(v.second->estimate());
+    }
+    for (auto &v : vertices_mps){
+      MPs.at(v.first)->SetPosition(v.second->estimate());
+    }
+
+    map_->RemoveOutliers();
 }
 
 void Backend::SetMap(const Map::Ptr map)

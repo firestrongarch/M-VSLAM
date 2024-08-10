@@ -10,6 +10,10 @@ public:
     KeyFrame() = default;
     KeyFrame(std::shared_ptr<Frame> frame);
 
+    unsigned long Id() override{
+        return key_frame_id_;
+    }
+
     unsigned long key_frame_id_;
 
     cv::Mat left_image_;

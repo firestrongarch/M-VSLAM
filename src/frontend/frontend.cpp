@@ -80,6 +80,5 @@ void Frontend::Track()
         });
 
         map_->InsertKeyFrame(std::make_shared<KeyFrame>(current_frame_));
-        map_->semaphore_.release();
     }
 }

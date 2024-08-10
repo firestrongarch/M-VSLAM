@@ -21,8 +21,11 @@ public:
 
     void ShowCurrentKeyFrame();
 
+    void RemoveOutliers();
 
     std::binary_semaphore semaphore_{0};
+    std::binary_semaphore backend_finished_{1};
+
     std::shared_ptr<KeyFrame> current_keyframe_{nullptr};
 
     std::shared_ptr<Camera> left_camera_;
