@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 #include "frame_base.h"
+#include "opencv2/core/types.hpp"
 #include <list>
 
 class MapPoint:public Eigen::Vector3d
@@ -27,7 +28,11 @@ public:
     unsigned long id_ = 0;
     bool is_outlier_ = false;
 
-    std::list<std::weak_ptr<FrameBase>> observers_;
+    struct Observer{
+        std::weak_ptr<FrameBase> frame;
+        std::weak_ptr<cv::KeyPoint> kp;
+    };
+    std::list<Observer> observers_;
 private:
     std::mutex mutex_pos_;
 };

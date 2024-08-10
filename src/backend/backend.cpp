@@ -14,8 +14,9 @@ void Backend::Run()
     {
         map_->semaphore_.acquire();
         for(auto& feature : map_->current_keyframe_->features_left_){
-            for(auto & kf : feature->map_point_.lock()->observers_){
-                std::cout<< " " <<kf.lock()->frame_id_;
+            for(auto & ob : feature->map_point_.lock()->observers_){
+                std::cout<< " " <<ob.frame.lock()->frame_id_;
+                std::cout<< " " <<ob.kp.lock()->pt;
             }
             std::cout<<std::endl;
         }
