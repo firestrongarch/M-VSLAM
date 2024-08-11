@@ -15,6 +15,7 @@ public:
 
 private:
     void Render();
+    void RenderKf();
     std::vector<Eigen::Vector3f> traj_VO_;
     std::vector<Sophus::SE3f> poses_;                  /// pose
     std::vector<Eigen::Vector3f> point_cloud_;

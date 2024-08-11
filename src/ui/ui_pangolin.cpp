@@ -29,7 +29,8 @@ void UiPangolin::Run()
 
         d_cam.Activate(s_cam);
 
-        Render();
+        // Render();
+        RenderKf();
         RenderMapPoint();
 
         // Swap frames and Process Events
@@ -47,6 +48,19 @@ void UiPangolin::Render()
     for (auto &p : traj_VO_){
         glColor3f(0, 1, 0);
         glVertex3d(p[0], p[1], p[2]);
+    }
+    glEnd();
+}
+
+void UiPangolin::RenderKf()
+{
+    glPointSize(5);
+    glBegin(GL_POINTS);
+    auto const Kfs = map_->GetAllKeyFrames();
+    for (auto &kf : Kfs){
+        auto p = kf.second->Pose().inverse().translation();
+        glColor3f(0, 1, 0);
+        glVertex3d(p.x(), p.y(), p.z());
     }
     glEnd();
 }

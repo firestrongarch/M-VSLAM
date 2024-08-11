@@ -21,13 +21,13 @@ void Backend::Run()
         //     }
         //     std::cout<<std::endl;
         // }
-        OptimizeActiveMap();
+        OptimizeMap();
 
         map_->backend_finished_.release();
     }
 }
 
-void Backend::OptimizeActiveMap()
+void Backend::OptimizeMap()
 {
     g2o::SparseOptimizer optimizer;
     using BlockSolver = g2o::BlockSolver_6_3;
@@ -47,7 +47,6 @@ void Backend::OptimizeActiveMap()
         vertex->setId(kf->key_frame_id_);
         vertex->setEstimate(kf->Pose());
         optimizer.addVertex(vertex);
-        vertices_kfs.insert({kf->key_frame_id_, vertex});
 
         max_kf_id = std::max(max_kf_id, kf->key_frame_id_);
         vertices_kfs.insert({kf->key_frame_id_, vertex});
@@ -67,6 +66,10 @@ void Backend::OptimizeActiveMap()
         v->setEstimate(mp->Pos());
         v->setId((max_kf_id + 1) + mp->id_); /// avoid vertex id equal
         v->setMarginalized(true);
+
+        // 局部地图优化需要判断地图点是否在活跃关键帧内
+        // v->setFixed(true);
+
         vertices_mps.insert({mp->id_, v});
         optimizer.addVertex(v);
 
@@ -77,13 +80,8 @@ void Backend::OptimizeActiveMap()
 
             auto edge = new EdgePoseXYZ(cam_K, pose);
             edge->setId(index);
-            try{
-                edge->setVertex(0, vertices_kfs.at(kf->Id()));
-                edge->setVertex(1, vertices_mps.at(mp->id_));
-            } catch (std::out_of_range &e){
-                std::cout<<"[Backend] "<<e.what()<<std::endl;
-            }
-
+            edge->setVertex(0, vertices_kfs.at(kf->Id()));
+            edge->setVertex(1, v);
             edge->setMeasurement(Eigen::Vector2d(pt.x, pt.y));
             edge->setInformation(Eigen::Matrix2d::Identity());
             auto rk = new g2o::RobustKernelHuber();
@@ -122,7 +120,6 @@ void Backend::OptimizeActiveMap()
     }
 
     // process the outlier edges
-    // remove the link between the feature and the mappoint
     for (auto &em : edges_and_mps){
         if (em.first->chi2() > chi2_th){
             std::puts("mp outlier");
@@ -131,10 +128,10 @@ void Backend::OptimizeActiveMap()
     }
 
     for (auto &v : vertices_kfs){
-      KFs.at(v.first)->SetPose(v.second->estimate());
+        KFs.at(v.first)->SetPose(v.second->estimate());
     }
     for (auto &v : vertices_mps){
-      MPs.at(v.first)->SetPosition(v.second->estimate());
+        MPs.at(v.first)->SetPosition(v.second->estimate());
     }
 
     map_->RemoveOutliers();
