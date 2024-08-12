@@ -1,17 +1,24 @@
-add_library(slam_types SHARED
-            frame_base.cpp
-            frame.cpp
-            key_frame.cpp
-            feature.cpp
-            map_point.cpp
-            map.cpp)
-target_link_libraries(slam_types ${OpenCV_LIBS})
+target_sources(M_VSLAM 
+PRIVATE
+    feature.cpp
+    map_point.cpp
+    frame_base.cpp
+    frame.cpp
+    key_frame.cpp
+    camera.cpp
+    map.cpp
+PUBLIC
+    feature.h
+    map_point.h
+    frame_base.h
+    frame.h
+    key_frame.h
+    camera.h
+    map.h
+    g2o_types.hpp
+    algorithm.h
+)
 
-# set(CPPCHECK_EXECUTABLE "/usr/bin/cppcheck")
-# # 将cppcheck添加到编译目标之后
-# add_custom_command(TARGET slam_data
-#                    POST_BUILD
-#                    COMMAND ${CPPCHECK_EXECUTABLE} --enable=all --suppress=missingIncludeSystem
-#                            --std=c++23 --force --quiet --project=/home/fu/cpp/project3/build/compile_commands.json
-#                    COMMENT "Running cppcheck after build"
-# )
+target_include_directories(M_VSLAM PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)

@@ -6,13 +6,12 @@
 #include <g2o/core/block_solver.h>
 #include <g2o/core/linear_solver.h>
 #include <g2o/solvers/dense/linear_solver_dense.h>
+#include <iostream>
 #include <memory>
 #include <vector>
 
 int Frontend::Optimize(OptimizeInfo info)
 {
-    Eigen::Matrix3d K = left_camera_->GetK();
-
     g2o::SparseOptimizer optimizer;
     using BlockSolver = g2o::BlockSolver_6_3;
     using LinearSolver = g2o::LinearSolverDense<BlockSolver::PoseMatrixType>;
@@ -31,8 +30,12 @@ int Frontend::Optimize(OptimizeInfo info)
     std::vector<EdgePose *> edges;
     for(auto &feature:info.features){
         std::shared_ptr<MapPoint> map_point = feature->map_point_.lock();
+        if(map_point->is_outlier_){
+            std::cout<<"map point is outlier"<<std::endl;   
+            continue;
+        }
         auto pt = feature->pt;
-        auto edge = new EdgePose(map_point->Pos(),K);
+        auto edge = new EdgePose(map_point->Pos(),info.K);
         edge->setId(index);
         edge->setVertex(0,vertex_pose);
         edge->setMeasurement(Eigen::Vector2d(pt.x, pt.y));

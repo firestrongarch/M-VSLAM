@@ -52,7 +52,8 @@ void Frontend::Track()
     // 最小化重投影误差
     Optimize({
         .features = current_frame_->features_left_,
-        .pose = current_frame_->Pose()
+        .pose = current_frame_->Pose(),
+        .K = map_->left_camera_->GetK()
     });
 
     // T_cc = T_cw * T_wc
@@ -73,8 +74,8 @@ void Frontend::Track()
         Triangulation({
             .prev_features = current_frame_->features_left_, 
             .next_features = current_frame_->features_right_,
-            .prev_pose = left_camera_->GetPose(),
-            .next_pose = right_camera_->GetPose(),
+            .prev_pose = map_->left_camera_->GetPose(),
+            .next_pose = map_->right_camera_->GetPose(),
             .current_pose_Twc = current_frame_->Pose().inverse()
         });
 

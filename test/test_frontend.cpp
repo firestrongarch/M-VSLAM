@@ -3,6 +3,7 @@
 #include <iostream>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
+#include "backend.h"
 #include "frontend.h"
 #include "camera.h"
 #include "map.h"
@@ -16,16 +17,19 @@ void LoadKittiImagesTimestamps(const string &str_path_to_sequence,
                                       vector<string> &str_image_left_vec_path,
                                       vector<string> &str_image_right_vec_path,
                                       vector<double> &timestamps_vec);
-const std::string kitti_path{"/home/fu/Kitti/00"};
+const std::string kitti_path{"/data/Kitti/00"};
 int main(int argc, char const *argv[])
 {
     auto file = cv::FileStorage("../config/kitti_00.yaml",
                                       cv::FileStorage::READ);
     Frontend frontend;
+    Backend backend;
     Map::Ptr map = std::make_shared<Map>();
     UiPangolin::Ptr ui_pangolin = std::make_shared<UiPangolin>();
     ui_pangolin->SetMap(map);
+    backend.SetMap(map);
     auto ui_pangolin_thread = std::thread(&UiPangolin::Run,ui_pangolin);
+    auto backend_thread = std::thread(&Backend::Run,backend);
 
     frontend.SetUiPangolin(ui_pangolin);
 
@@ -45,7 +49,8 @@ int main(int argc, char const *argv[])
         Sophus::SE3d(Sophus::SO3d(), t_right)
     );
 
-    frontend.SetCamera(left, right);
+    map->left_camera_ = left;
+    map->right_camera_ = right;
     frontend.SetMap(map);
 
     /// load sequence frames
@@ -64,6 +69,7 @@ int main(int argc, char const *argv[])
         frontend.RunBinocular(img_left, img_right,timestamp);
     }
 
+    backend_thread.join();
     ui_pangolin_thread.join();
     return 0;
 }

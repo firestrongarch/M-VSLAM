@@ -29,7 +29,8 @@ void UiPangolin::Run()
 
         d_cam.Activate(s_cam);
 
-        Render();
+        // Render();
+        RenderKf();
         RenderMapPoint();
 
         // Swap frames and Process Events
@@ -51,13 +52,26 @@ void UiPangolin::Render()
     glEnd();
 }
 
+void UiPangolin::RenderKf()
+{
+    glPointSize(5);
+    glBegin(GL_POINTS);
+    auto const Kfs = map_->GetAllKeyFrames();
+    for (auto &kf : Kfs){
+        auto p = kf.second->Pose().inverse().translation();
+        glColor3f(0, 1, 0);
+        glVertex3d(p.x(), p.y(), p.z());
+    }
+    glEnd();
+}
+
 void UiPangolin::AddTrajectoryPose(const Sophus::SE3d &pose)
 {
     poses_.emplace_back(pose.cast<float>());
     traj_VO_.emplace_back(pose.translation().cast<float>());
 }
 
-void UiPangolin::SetMap(const MapBase::Ptr map)
+void UiPangolin::SetMap(const Map::Ptr map)
 {
     map_ = map;
 }

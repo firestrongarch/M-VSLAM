@@ -5,8 +5,8 @@
 std::vector<Eigen::Vector3d> Frontend::Pixel2Camera(cv::Point2f const &pt1, cv::Point2f const &pt2)
 {
     return std::vector<Eigen::Vector3d>{
-        left_camera_->Pixel2Camera(Eigen::Vector2d(pt1.x, pt1.y)),
-        right_camera_->Pixel2Camera(Eigen::Vector2d(pt2.x, pt2.y))
+        map_->left_camera_->Pixel2Camera(Eigen::Vector2d(pt1.x, pt1.y)),
+        map_->right_camera_->Pixel2Camera(Eigen::Vector2d(pt2.x, pt2.y))
     };
 }
 
