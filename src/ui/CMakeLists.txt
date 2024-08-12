@@ -1,13 +1,11 @@
-add_library(slam_ui SHARED
-            ui_pangolin.cpp
-            ui_pangolin_point_cloud.cpp)
-target_link_libraries(slam_ui pango_display fmt)
+target_sources(M_VSLAM 
+PRIVATE
+    ui_pangolin_point_cloud.cpp
+    ui_pangolin.cpp
+PUBLIC
+    ui_pangolin.h
+)
 
-# set(CPPCHECK_EXECUTABLE "/usr/bin/cppcheck")
-# # 将cppcheck添加到编译目标之后
-# add_custom_command(TARGET slam_data
-#                    POST_BUILD
-#                    COMMAND ${CPPCHECK_EXECUTABLE} --enable=all --suppress=missingIncludeSystem
-#                            --std=c++23 --force --quiet --project=/home/fu/cpp/project3/build/compile_commands.json
-#                    COMMENT "Running cppcheck after build"
-# )
+target_include_directories(M_VSLAM PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)

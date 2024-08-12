@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(slam)
+project(M_VSLAM)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -28,11 +28,6 @@ find_package(g2o REQUIRED)
 include_directories(${g2o_INCLUDE_DIRS})
 
 include_directories(/usr/include/eigen3)
-include_directories(inc)
 
-add_subdirectory(src/frontend)
-add_subdirectory(src/backend)
-add_subdirectory(src/types)
-add_subdirectory(src/ui)
-
+add_subdirectory(src)
 add_subdirectory(test)

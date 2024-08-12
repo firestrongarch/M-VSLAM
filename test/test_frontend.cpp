@@ -17,7 +17,7 @@ void LoadKittiImagesTimestamps(const string &str_path_to_sequence,
                                       vector<string> &str_image_left_vec_path,
                                       vector<string> &str_image_right_vec_path,
                                       vector<double> &timestamps_vec);
-const std::string kitti_path{"/home/fu/Kitti/00"};
+const std::string kitti_path{"/data/Kitti/00"};
 int main(int argc, char const *argv[])
 {
     auto file = cv::FileStorage("../config/kitti_00.yaml",
