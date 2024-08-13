@@ -29,5 +29,5 @@ include_directories(${g2o_INCLUDE_DIRS})
 
 include_directories(/usr/include/eigen3)
 
-add_subdirectory(src)
+add_subdirectory(src_modules)
 add_subdirectory(test)
