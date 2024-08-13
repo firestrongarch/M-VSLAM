@@ -17,6 +17,8 @@ PUBLIC
     map.h
     g2o_types.hpp
     algorithm.h
+PUBLIC FILE_SET CXX_MODULES FILES
+    triangulate.mpp
 )
 
 target_include_directories(M_VSLAM PUBLIC

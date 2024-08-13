@@ -1,6 +1,7 @@
 #include "frontend.h"
-#include "algorithm.h"
+// #include "algorithm.h"
 #include <opencv2/calib3d.hpp>
+import triangulate;
 
 std::vector<Eigen::Vector3d> Frontend::Pixel2Camera(cv::Point2f const &pt1, cv::Point2f const &pt2)
 {
