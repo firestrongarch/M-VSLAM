@@ -12,8 +12,10 @@ export class MapPoint:public Eigen::Vector3d
 public:
     using Ptr = std::shared_ptr<MapPoint>;
     MapPoint() = default;
-    MapPoint(Eigen::Vector3d position);
-
+    MapPoint(Eigen::Vector3d position): Eigen::Vector3d(position){
+        static unsigned long Id = 0;
+        id_ = Id++;
+    }
     Eigen::Vector3d Pos(){
         std::unique_lock<std::mutex> lck(mutex_pos_);
         return *this;
@@ -42,8 +44,9 @@ export class Feature : public Core::KeyPoint
 public:
     using Ptr = std::shared_ptr<Feature>;
     Feature() = default;
-    Feature(const Core::KeyPoint &kp);
+    Feature(const Core::KeyPoint &kp): Core::KeyPoint(kp) {
 
+    };
     std::weak_ptr<MapPoint> map_point_;
 
     bool is_outlier_ = false;

@@ -12,15 +12,15 @@ struct DetectorInfo{
     inline static Core::Feature2D detector = Core::ORB::create(300);
 };
 
-template<class T = Feature>
+export template<class T = Feature>
 int DetectFeatures(DetectorInfo<T> info)
 {
     // step1 屏蔽已有特征点的区域
     Core::Mat mask(info.img.size(), Core::_8UC1, Core::ScalarAll(255));
     for (const auto &feat : info.features){
         Core::rectangle(mask,
-                    feat->pt - Core::Point2f(10, 10),
-                    feat->pt + Core::Point2f(10, 10),
+                    Core::Point2f(feat->pt.x- 10, feat->pt.y- 10),
+                    Core::Point2f(feat->pt.x+ 10, feat->pt.y+ 10),
                     0,
                     Core::FILLED);
     }

@@ -5,8 +5,12 @@ export module frame_base;
 export class FrameBase{
 public:
     FrameBase() = default;
-    void SetPose(const Sophus::SE3d &pose);
-    Sophus::SE3d Pose();
+    void SetPose(const Sophus::SE3d &pose){
+        pose_ = pose;
+    }
+    Sophus::SE3d Pose(){
+        return pose_;
+    }
 
     virtual unsigned long Id(){
         return frame_id_;

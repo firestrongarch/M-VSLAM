@@ -2,7 +2,7 @@ add_library(M_VSLAM SHARED)
 target_sources(M_VSLAM PUBLIC FILE_SET CXX_MODULES)
 
 target_link_libraries(M_VSLAM
-    ${OpenCV_LIBS} 
+    ${OpenCV_LIBS}
     pango_display 
     fmt
     glog 
