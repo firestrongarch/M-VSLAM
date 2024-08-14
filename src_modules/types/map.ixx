@@ -3,12 +3,10 @@ module;
 #include <semaphore>
 #include <unordered_map>
 export module map;
-import camera;
 import key_frame;
 import map_point;
-
-export class Map
-{
+import camera;
+export class Map{
 public:
     using Ptr = std::shared_ptr<Map>;
     using KeyFrames = std::unordered_map<unsigned long, std::shared_ptr<KeyFrame>>;
@@ -41,4 +39,3 @@ private:
 
     unsigned int num_active_key_frames_;
 };
-

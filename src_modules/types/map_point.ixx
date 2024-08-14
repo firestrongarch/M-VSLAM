@@ -2,23 +2,17 @@ module;
 #include <Eigen/Core>
 #include <memory>
 #include <mutex>
-#include "opencv2/core/types.hpp"
 #include <list>
-
 export module map_point;
-
-import frame_base;
+export import core;
+export import frame_base;
 
 export class MapPoint:public Eigen::Vector3d
 {
 public:
     using Ptr = std::shared_ptr<MapPoint>;
     MapPoint() = default;
-    MapPoint(Eigen::Vector3d position): Eigen::Vector3d(position)
-    {
-        static unsigned long Id = 0;
-        id_ = Id++;
-    }
+    MapPoint(Eigen::Vector3d position);
 
     Eigen::Vector3d Pos(){
         std::unique_lock<std::mutex> lck(mutex_pos_);
@@ -36,9 +30,21 @@ public:
 
     struct Observer{
         std::weak_ptr<FrameBase> frame;
-        std::weak_ptr<cv::KeyPoint> kp;
+        std::weak_ptr<Core::KeyPoint> kp;
     };
     std::list<Observer> observers_;
 private:
     std::mutex mutex_pos_;
+};
+
+export class Feature : public Core::KeyPoint
+{
+public:
+    using Ptr = std::shared_ptr<Feature>;
+    Feature() = default;
+    Feature(const Core::KeyPoint &kp);
+
+    std::weak_ptr<MapPoint> map_point_;
+
+    bool is_outlier_ = false;
 };

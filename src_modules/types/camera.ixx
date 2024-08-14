@@ -1,23 +1,22 @@
 module;
-#include "sophus/se3.hpp"
-#include "opencv2/core/mat.hpp"
-#include <opencv2/core/eigen.hpp>
+#include <sophus/se3.hpp>
 #include <memory>
 export module camera;
+import core;
 
 export class Camera {
 public:
     using Ptr = std::shared_ptr<Camera>;
     Camera() = default;
     Camera(double fx, double fy, double cx, double cy, double baseline, const Sophus::SE3d &pose,
-         const cv::Mat dist_coef)
+         const Core::Mat dist_coef)
     : fx_(fx), fy_(fy), cx_(cx), cy_(cy), baseline_(baseline), pose_(pose), dist_coef_(dist_coef)
     {
         K_ << fx_, 0, cx_, 0, fy_, cy_, 0, 0, 1;
     }
 
-    Camera(const cv::Mat& K, const cv::Mat& dist_coef , const Sophus::SE3d &pose):pose_(pose){
-        cv::cv2eigen(K, K_);
+    Camera(const Core::Mat& K, const Core::Mat& dist_coef , const Sophus::SE3d &pose):pose_(pose){
+        Core::cv2eigen(K, K_);
     }
 
     const Sophus::SE3d& GetPose() const { return pose_; }
@@ -39,7 +38,7 @@ private:
     double baseline_ = 0;
     Sophus::SE3d pose_;
     Sophus::SE3d pose_inv_;
-    cv::Mat dist_coef_;
+    Core::Mat dist_coef_;
     Eigen::Matrix3d K_;
 };
 
