@@ -7,3 +7,5 @@ bin
 release
 build_release
 .VSCodeCounter
+install
+log
