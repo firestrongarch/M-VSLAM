@@ -1,24 +1,22 @@
+# 添加文件集
+file(GLOB HEADER_FILES "*.h" "*.hpp" )
+file(GLOB CPP_FILES "*.cpp")
+
 target_sources(M_VSLAM 
 PRIVATE
-    feature.cpp
-    map_point.cpp
-    frame_base.cpp
-    frame.cpp
-    key_frame.cpp
-    camera.cpp
-    map.cpp
+    ${CPP_FILES}
 PUBLIC
-    feature.h
-    map_point.h
-    frame_base.h
-    frame.h
-    key_frame.h
-    camera.h
-    map.h
-    g2o_types.hpp
-    algorithm.h
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/feature.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/map_point.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/frame_base.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/frame.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/key_frame.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/camera.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/map.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/g2o_types.hpp>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/algorithm.h>
 )
 
 target_include_directories(M_VSLAM PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
 )
