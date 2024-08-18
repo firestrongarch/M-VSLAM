@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 project(slam)
-
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -10,10 +10,11 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+
+find_package(M_VSLAM REQUIRED)
+
 add_executable(slam slam.cpp)
+target_link_libraries(slam M_VSLAM::M_VSLAM)
 ament_target_dependencies(slam rclcpp)
 
 if(BUILD_TESTING)

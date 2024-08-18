@@ -2,6 +2,7 @@
 #include <rclcpp/executors.hpp>
 #include <rclcpp/node.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "M_VSLAM/frontend.h"
 
 int main(int argc,char** argv)
 {
