@@ -32,3 +32,27 @@ install(EXPORT ${PROJECT_NAME}Targets
     NAMESPACE ${PROJECT_NAME}::
     DESTINATION lib/cmake/${PROJECT_NAME}
 )
+
+include(CMakePackageConfigHelpers)
+# generate the config file that includes the exports
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION "lib/cmake/M_VSLAM"
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION "${Tutorial_VERSION_MAJOR}.${Tutorial_VERSION_MINOR}"
+    COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/M_VSLAMConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/M_VSLAMConfigVersion.cmake
+  DESTINATION lib/cmake/M_VSLAM
+)
+
+export(EXPORT ${PROJECT_NAME}Targets
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake"
+)
