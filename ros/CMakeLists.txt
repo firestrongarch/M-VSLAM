@@ -11,12 +11,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 find_package(M_VSLAM REQUIRED)
 
 add_executable(slam slam.cpp)
 target_link_libraries(slam M_VSLAM::M_VSLAM)
-ament_target_dependencies(slam rclcpp std_msgs)
+ament_target_dependencies(slam rclcpp std_msgs sensor_msgs cv_bridge)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
