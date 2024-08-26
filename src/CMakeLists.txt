@@ -14,6 +14,7 @@ target_link_libraries(M_VSLAM PUBLIC
 add_subdirectory(types)
 add_subdirectory(frontend)
 add_subdirectory(backend)
+add_subdirectory(loop_closing)
 add_subdirectory(ui)
 
 get_target_property(HEADERS M_VSLAM INTERFACE_SOURCES)

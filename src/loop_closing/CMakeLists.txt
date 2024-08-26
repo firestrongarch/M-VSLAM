@@ -1,0 +1,19 @@
+file(GLOB CPP_FILES "*.cpp")
+
+target_sources(M_VSLAM
+PRIVATE
+    ${CPP_FILES}
+PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/binary_descriptor.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/binary_index.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/binary_tree_node.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/binary_tree.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/priority_queues.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/island.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/lcdetector.h>
+)
+
+target_include_directories(M_VSLAM PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+    $<INSTALL_INTERFACE:include/M_VSLAM>
+)
