@@ -11,6 +11,7 @@ PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/priority_queues.h>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/island.h>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/lcdetector.h>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/loop_closing.h>
 )
 
 target_include_directories(M_VSLAM PUBLIC

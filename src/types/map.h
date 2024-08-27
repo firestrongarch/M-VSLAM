@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <semaphore>
 #include "camera.h"
 #include "key_frame.h"
@@ -19,12 +20,20 @@ public:
     MapPoints GetAllMapPoints();
     KeyFrames GetAllKeyFrames();
 
+    MapPoints GetActiveMapPoints();
+    KeyFrames GetActiveKeyFrames();
+
     void ShowCurrentKeyFrame();
 
     void RemoveOutliers();
 
-    std::binary_semaphore semaphore_{0};
+    bool backend_thread_{false};
+    std::binary_semaphore backend_start_{0};
     std::binary_semaphore backend_finished_{1};
+
+    bool loop_closing_thread_{false};
+    std::binary_semaphore loop_closing_start_{0};
+    std::binary_semaphore loop_closing_finished_{1};
 
     std::shared_ptr<KeyFrame> current_keyframe_{nullptr};
 
@@ -33,11 +42,12 @@ public:
 
 private:
     MapPoints all_map_points_;
-    MapPoints active_map_point_;
-
     KeyFrames all_key_frames_;
-    KeyFrames active_key_frames_;
 
+    KeyFrames active_key_frames_;
+    // std::deque<std::shared_ptr<KeyFrame>> active_key_frames_;
+
+    std::mutex mutex_map_points_;
     unsigned int num_active_key_frames_;
 };
 

@@ -2,6 +2,7 @@
 #include "frame_base.h"
 #include "feature.h"
 #include "frame.h"
+#include <mutex>
 
 class KeyFrame:public FrameBase
 {
@@ -18,4 +19,7 @@ public:
 
     cv::Mat left_image_;
     std::vector<std::shared_ptr<Feature>> features_left_;
+
+    // 与回环产生数据竞争
+    std::mutex mutex_features_left_;
 };

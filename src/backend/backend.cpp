@@ -13,7 +13,7 @@ void Backend::Run()
 {
     while (true)
     {
-        map_->semaphore_.acquire();
+        map_->backend_start_.acquire();
         // for(auto& feature : map_->current_keyframe_->features_left_){
         //     for(auto & ob : feature->map_point_.lock()->observers_){
         //         std::cout<< " " <<ob.frame.lock()->Id();
@@ -36,8 +36,10 @@ void Backend::OptimizeMap()
     auto algorithm = new g2o::OptimizationAlgorithmLevenberg(std::move(solver));
     optimizer.setAlgorithm(algorithm);
 
-    auto KFs = map_->GetAllKeyFrames();
-    auto MPs = map_->GetAllMapPoints();
+    // auto KFs = map_->GetAllKeyFrames();
+    // auto MPs = map_->GetAllMapPoints();
+    auto KFs = map_->GetActiveKeyFrames();
+    auto MPs = map_->GetActiveMapPoints();
 
     std::unordered_map<unsigned long, VertexPose *> vertices_kfs;
     unsigned long max_kf_id = 0;
@@ -76,6 +78,9 @@ void Backend::OptimizeMap()
         // edges
         for(auto &ob: mp->observers_){ 
             auto kf = ob.frame.lock();
+            if(KFs.find(kf->Id()) == KFs.end()){
+                continue;
+            }
             auto& pt = ob.kp.lock()->pt;
 
             auto edge = new EdgePoseXYZ(cam_K, pose);
@@ -140,4 +145,5 @@ void Backend::OptimizeMap()
 void Backend::SetMap(const Map::Ptr map)
 {
     map_ = map;
+    map_->backend_thread_ = true;
 }

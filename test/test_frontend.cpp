@@ -8,6 +8,7 @@
 #include "camera.h"
 #include "map.h"
 #include "ui_pangolin.h"
+#include "loop_closing.h"
 #include <optional>
 #include <string>
 #include <thread>
@@ -24,12 +25,16 @@ int main(int argc, char const *argv[])
                                       cv::FileStorage::READ);
     Frontend frontend;
     Backend backend;
+    LoopClosing loop_closing;
+
     Map::Ptr map = std::make_shared<Map>();
     UiPangolin::Ptr ui_pangolin = std::make_shared<UiPangolin>();
     ui_pangolin->SetMap(map);
     backend.SetMap(map);
+    loop_closing.SetMap(map);
     auto ui_pangolin_thread = std::thread(&UiPangolin::Run,ui_pangolin);
     auto backend_thread = std::thread(&Backend::Run,backend);
+    auto loop_closing_thread = std::thread(&LoopClosing::Run,loop_closing);
 
     frontend.SetUiPangolin(ui_pangolin);
 
@@ -71,6 +76,7 @@ int main(int argc, char const *argv[])
 
     backend_thread.join();
     ui_pangolin_thread.join();
+    loop_closing_thread.join();
     return 0;
 }
 
