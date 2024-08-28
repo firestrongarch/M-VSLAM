@@ -4,7 +4,6 @@ PRIVATE
     frontend_init.cpp
     frontend_track.cpp
     frontend_show.cpp
-    frontend_optimize.cpp
     frontend_utils.cpp
     frontend_template.hpp
 PUBLIC

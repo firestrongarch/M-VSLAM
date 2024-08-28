@@ -51,11 +51,10 @@ void Frontend::Track()
     cv::waitKey(10);
 
     // 最小化重投影误差
-    Optimize({
+    current_frame_->SetPose(map_->Optimize({
         .features = current_frame_->features_left_,
-        .pose = current_frame_->Pose(),
-        .K = map_->left_camera_->GetK()
-    });
+        .pose = current_frame_->Pose()
+    }));
 
     // T_cc = T_cw * T_wc
     relative_motion_ = current_frame_->Pose() * last_frame_->Pose().inverse();

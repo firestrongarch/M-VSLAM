@@ -29,26 +29,27 @@ void LoopClosing::Run()
         lcdet.process(keyframe->Id(), kps, descs, &result);
         switch (result.status) {
         case ibow_lcd::LC_DETECTED:
+            std::cout<< "current keyframe id:" << keyframe->Id() << "\n";
             std::cout << "--- Loop detected!!!: " << result.train_id <<
                         " with " << result.inliers << " inliers" << std::endl;
             break;
-        case ibow_lcd::LC_NOT_DETECTED:
-            std::cout << "No loop found" << std::endl;
-            break;
-        case ibow_lcd::LC_NOT_ENOUGH_IMAGES:
-            std::cout << "Not enough images to found a loop" << std::endl;
-            break;
-        case ibow_lcd::LC_NOT_ENOUGH_ISLANDS:
-            std::cout << "Not enough islands to found a loop" << std::endl;
-            break;
-        case ibow_lcd::LC_NOT_ENOUGH_INLIERS:
-            std::cout << "Not enough inliers" << std::endl;
-            break;
-        case ibow_lcd::LC_TRANSITION:
-            std::cout << "Transitional loop closure" << std::endl;
-            break;
+        // case ibow_lcd::LC_NOT_DETECTED:
+        //     std::cout << "No loop found" << std::endl;
+        //     break;
+        // case ibow_lcd::LC_NOT_ENOUGH_IMAGES:
+        //     std::cout << "Not enough images to found a loop" << std::endl;
+        //     break;
+        // case ibow_lcd::LC_NOT_ENOUGH_ISLANDS:
+        //     std::cout << "Not enough islands to found a loop" << std::endl;
+        //     break;
+        // case ibow_lcd::LC_NOT_ENOUGH_INLIERS:
+        //     std::cout << "Not enough inliers" << std::endl;
+        //     break;
+        // case ibow_lcd::LC_TRANSITION:
+        //     std::cout << "Transitional loop closure" << std::endl;
+        //     break;
         default:
-            std::cout << "No status information" << std::endl;
+            // std::cout << "No status information" << std::endl;
             break;
         }
 

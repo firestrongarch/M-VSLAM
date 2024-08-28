@@ -41,13 +41,6 @@ private:
     };
     int Triangulation(TriInfo info);
 
-    struct OptimizeInfo{
-        std::vector<std::shared_ptr<Feature>>& features;
-        Sophus::SE3d const & pose;
-        const Eigen::Matrix3d& K;
-    };
-    int Optimize(OptimizeInfo info);
-
     std::vector<Eigen::Vector3d> Pixel2Camera(cv::Point2f const &pt1, cv::Point2f const &pt2);
 
     void Show();

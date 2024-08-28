@@ -27,6 +27,12 @@ public:
 
     void RemoveOutliers();
 
+    struct OptimizeInfo{
+        std::vector<std::shared_ptr<Feature>>& features;
+        Sophus::SE3d const & pose;
+    };
+    Sophus::SE3d Optimize(OptimizeInfo info);
+
     bool backend_thread_{false};
     std::binary_semaphore backend_start_{0};
     std::binary_semaphore backend_finished_{1};
