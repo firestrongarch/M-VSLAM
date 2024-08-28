@@ -73,6 +73,11 @@ int main(int argc, char const *argv[])
 
         frontend.RunBinocular(img_left, img_right,timestamp);
     }
+    if (map->backend_thread_) {
+        map->backend_finished_.acquire();
+    } 
+
+    ui_pangolin->SaveTrajectoryTUM();
 
     backend_thread.join();
     ui_pangolin_thread.join();

@@ -12,6 +12,7 @@ public:
     // void AddMapPoint(const Eigen::Vector3d &point);
     void RenderMapPoint();
     void SetMap(const Map::Ptr map);
+    void SaveTrajectoryTUM();
 
 private:
     void Render();

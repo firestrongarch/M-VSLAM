@@ -75,3 +75,34 @@ void UiPangolin::SetMap(const Map::Ptr map)
 {
     map_ = map;
 }
+
+void UiPangolin::SaveTrajectoryTUM()
+{
+    std::ofstream outfile;
+    outfile.open("../result.txt", std::ios_base::out | std::ios_base::trunc);
+    outfile << std::fixed;
+    std::map<unsigned long, KeyFrame::Ptr> poses_map;
+
+    for (auto &kf : map_->GetAllKeyFrames()){
+        unsigned long keyframe_id = kf.first;
+        auto keyframe = kf.second;
+        poses_map.insert(make_pair(keyframe_id, keyframe));
+    }
+
+    for (auto &kf : poses_map){
+        unsigned long keyframe_id = kf.first;
+        KeyFrame::Ptr keyframe = kf.second;
+        double timestamp = keyframe->timestamp_;
+        Sophus::SE3d frame_pose = keyframe->Pose().inverse();
+        Eigen::Vector3d pose_t = frame_pose.translation();
+        Eigen::Matrix3d pose_R = frame_pose.rotationMatrix();
+        Eigen::Quaterniond pose_q = Eigen::Quaterniond(pose_R);
+
+        outfile << std::setprecision(6) << timestamp << " " << pose_t.transpose().x() << " "
+                << pose_t.transpose().y() << " " << pose_t.transpose().z() << " "
+                << pose_q.coeffs().transpose().x() << " " << pose_q.coeffs().transpose().y()
+                << " " << pose_q.coeffs().transpose().z() << " "
+                << pose_q.coeffs().transpose().w() << std::endl;
+    }
+    outfile.close();
+}

@@ -19,9 +19,7 @@ void LoopClosing::Run()
         std::unique_lock lock{keyframe->mutex_features_left_};
         std::vector<cv::KeyPoint> kps;
         for(auto& feature : keyframe->features_left_){
-            cv::KeyPoint kp;
-            kp.pt = feature->pt;
-            kps.push_back(kp);
+            kps.push_back(*feature);
         }
         lock.unlock();
         

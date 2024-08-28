@@ -62,4 +62,5 @@ private:
     std::shared_ptr<UiPangolin> ui_pangolin_;
 
     Sophus::SE3d relative_motion_;
+    Sophus::SE3d relative_kf_;
 };

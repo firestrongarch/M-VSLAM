@@ -28,7 +28,8 @@ void Frontend::RunBinocular(const cv::Mat &left_image, const cv::Mat &right_iamg
 void Frontend::Track()
 {
     // T_cw = T_cc * T_cw
-    current_frame_->SetPose(relative_motion_ * last_frame_->Pose() );
+    current_frame_->SetPose(relative_kf_ * last_frame_->Pose() );
+    // current_frame_->SetPose(relative_kf_ * map_->current_keyframe_->Pose() );
     // step1 跟踪上一帧
     OpticalFlow({
         .prev_features = last_frame_->features_left_, 
@@ -58,6 +59,7 @@ void Frontend::Track()
 
     // T_cc = T_cw * T_wc
     relative_motion_ = current_frame_->Pose() * last_frame_->Pose().inverse();
+    // relative_kf_ *= relative_motion_;
 
     // step2 在当前帧中补充更多特征点
     if(current_frame_->features_left_.size() < 100){
@@ -80,5 +82,6 @@ void Frontend::Track()
         });
 
         map_->InsertKeyFrame(std::make_shared<KeyFrame>(current_frame_));
+        // relative_kf_ = relative_motion_;
     }
 }
