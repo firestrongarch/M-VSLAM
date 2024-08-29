@@ -11,6 +11,8 @@ public:
         map_->loop_closing_thread_ = true;
     }
 
+    Sophus::SE3d ComputeCorrectPose(std::vector<std::shared_ptr<Feature>> &features);
+
 private:
     Map::Ptr map_;
 

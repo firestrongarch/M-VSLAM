@@ -11,6 +11,9 @@ public:
     KeyFrame() = default;
     KeyFrame(std::shared_ptr<Frame> frame);
 
+    std::vector<std::shared_ptr<Feature>> GetFeatures();
+    void SetFeatures(const std::vector<std::shared_ptr<Feature>>& features);
+
     unsigned long Id() override{
         return key_frame_id_;
     }

@@ -78,6 +78,7 @@ int main(int argc, char const *argv[])
     } 
 
     ui_pangolin->SaveTrajectoryTUM();
+    std::puts("Finished!");
 
     backend_thread.join();
     ui_pangolin_thread.join();

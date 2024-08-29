@@ -14,13 +14,9 @@ void Backend::Run()
     while (true)
     {
         map_->backend_start_.acquire();
-        // for(auto& feature : map_->current_keyframe_->features_left_){
-        //     for(auto & ob : feature->map_point_.lock()->observers_){
-        //         std::cout<< " " <<ob.frame.lock()->Id();
-        //         std::cout<< " " <<ob.kp.lock()->pt;
-        //     }
-        //     std::cout<<std::endl;
-        // }
+        if(map_->loop_closing_thread_ ){
+            map_->loop_closing_finished_.acquire();
+        }
         OptimizeMap();
 
         map_->backend_finished_.release();
@@ -36,8 +32,6 @@ void Backend::OptimizeMap()
     auto algorithm = new g2o::OptimizationAlgorithmLevenberg(std::move(solver));
     optimizer.setAlgorithm(algorithm);
 
-    // auto KFs = map_->GetAllKeyFrames();
-    // auto MPs = map_->GetAllMapPoints();
     auto KFs = map_->GetActiveKeyFrames();
     auto MPs = map_->GetActiveMapPoints();
 
@@ -48,6 +42,10 @@ void Backend::OptimizeMap()
         VertexPose *vertex = new VertexPose();
         vertex->setId(kf->key_frame_id_);
         vertex->setEstimate(kf->Pose());
+        if(kf->Id() == map_->loop_frame_id_ && map_->loop_frame_id_ != 0 && map_->loop_corrected_){
+            vertex->setFixed(true);
+            map_->loop_corrected_ = false;
+        }
         optimizer.addVertex(vertex);
 
         max_kf_id = std::max(max_kf_id, kf->key_frame_id_);
@@ -81,8 +79,10 @@ void Backend::OptimizeMap()
             if(KFs.find(kf->Id()) == KFs.end()){
                 continue;
             }
+            // if(kf->Id() == map_->loop_frame_id_ && map_->loop_frame_id_ != 0){
+            //     v->setFixed(true);
+            // }
             auto& pt = ob.kp.lock()->pt;
-
             auto edge = new EdgePoseXYZ(cam_K, pose);
             edge->setId(index);
             edge->setVertex(0, vertices_kfs.at(kf->Id()));
@@ -127,7 +127,6 @@ void Backend::OptimizeMap()
     // process the outlier edges
     for (auto &em : edges_and_mps){
         if (em.first->chi2() > chi2_th){
-            std::puts("mp outlier");
             em.second.lock()->is_outlier_ = true;
         }
     }

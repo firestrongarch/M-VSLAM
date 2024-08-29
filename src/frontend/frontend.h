@@ -17,24 +17,30 @@ public:
     void SetMap(const Map::Ptr map);
     void SetUiPangolin(const UiPangolin::Ptr ui_pangolin);
 
+    struct LkInfo{
+        std::vector<std::shared_ptr<Feature>> &prev_features;
+        std::vector<std::shared_ptr<Feature>> &next_features;
+        cv::Mat& prev_img;
+        cv::Mat& next_img;
+    };
+    static int OpticalFlow(LkInfo info);
+
+    struct OptimizeInfo{
+        std::vector<std::shared_ptr<Feature>> &features;
+        Sophus::SE3d const & pose;
+        const Eigen::Matrix3d& K;
+    };
+    static Sophus::SE3d Optimize(OptimizeInfo info);
+
 private:                
     bool Init();
     bool InitMap();
     
     void Track();
 
-    struct LkInfo{
-        std::vector<std::shared_ptr<Feature>>& prev_features;
-        std::vector<std::shared_ptr<Feature>>& next_features;
-        cv::Mat& prev_img;
-        cv::Mat& next_img;
-    };
-
-    int OpticalFlow(LkInfo info);
-
     struct TriInfo{
-        std::vector<std::shared_ptr<Feature>>& prev_features;
-        std::vector<std::shared_ptr<Feature>>& next_features;
+        std::vector<std::shared_ptr<Feature>> &prev_features;
+        std::vector<std::shared_ptr<Feature>> &next_features;
         Sophus::SE3d const & prev_pose;
         Sophus::SE3d const & next_pose;
         Sophus::SE3d current_pose_Twc{};
