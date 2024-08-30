@@ -8,8 +8,13 @@ void Map::InsertKeyFrame(std::shared_ptr<KeyFrame> key_frame)
     if(backend_thread_){
         backend_finished_.acquire();
     }
-    
+
+    if(current_keyframe_){
+        key_frame->last_key_frame_ = current_keyframe_;
+    }
     current_keyframe_ = key_frame;
+
+    
     all_key_frames_.insert({key_frame->key_frame_id_, key_frame});
     active_key_frames_.insert({key_frame->key_frame_id_, key_frame});
     if (active_key_frames_.size() >= 10) {

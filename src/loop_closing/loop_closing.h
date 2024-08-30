@@ -12,6 +12,7 @@ public:
     }
 
     Sophus::SE3d ComputeCorrectPose(std::vector<std::shared_ptr<Feature>> &features);
+    void OptimizeMapPoint();
 
 private:
     Map::Ptr map_;

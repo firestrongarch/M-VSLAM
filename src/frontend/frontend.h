@@ -29,8 +29,11 @@ public:
         std::vector<std::shared_ptr<Feature>> &features;
         Sophus::SE3d const & pose;
         const Eigen::Matrix3d& K;
+        const Sophus::SE3d& cam_pose{};
     };
     static Sophus::SE3d Optimize(OptimizeInfo info);
+
+    static void OptimizeMP(OptimizeInfo info);
 
 private:                
     bool Init();

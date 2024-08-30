@@ -84,7 +84,9 @@ void Frontend::Track()
             .current_pose_Twc = current_frame_->Pose().inverse()
         });
 
-        map_->InsertKeyFrame(std::make_shared<KeyFrame>(current_frame_));
+        auto key_frame = std::make_shared<KeyFrame>(current_frame_);
+        key_frame->relative_pose_to_last_KF_ = relative_kf_.inverse();
+        map_->InsertKeyFrame(key_frame);
         relative_kf_ = relative_motion_;
     }
 }

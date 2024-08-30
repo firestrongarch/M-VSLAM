@@ -31,15 +31,15 @@ void LoopClosing::Run()
         case ibow_lcd::LC_DETECTED:{
             auto KFs = map_->GetAllKeyFrames();
             std::vector<Feature::Ptr> features;
-            auto prev_features = KFs.at(keyframe->Id())->features_left_;
+            auto prev_features = KFs.at(result.train_id)->features_left_;
             auto inliners = Frontend::OpticalFlow({
                 .prev_features = prev_features, 
                 .next_features = features, 
-                .prev_img = KFs.at(keyframe->Id())->left_image_, 
-                .next_img = KFs.at(result.train_id)->left_image_
+                .prev_img = KFs.at(result.train_id)->left_image_, 
+                .next_img = KFs.at(keyframe->Id())->left_image_
             });
 
-            if(inliners > 350){
+            if(inliners > 300){
                 std::cout <<" loop "<< inliners << " inliers" << std::endl;
                 auto pose = Frontend::Optimize({
                     .features = features,
@@ -47,7 +47,15 @@ void LoopClosing::Run()
                     .K = map_->left_camera_->GetK()
                 });
                 keyframe->SetPose(pose);
+                Frontend::OptimizeMP({
+                    .features = keyframe->features_left_,
+                    .pose = keyframe->Pose(),
+                    .K = map_->left_camera_->GetK(),
+                    .cam_pose = map_->left_camera_->GetPose()
+                });
+                keyframe->relative_pose_to_loop_KF_ = KFs.at(result.train_id)->Pose() * keyframe->Pose().inverse();
                 map_->loop_frame_id_ = keyframe->Id();
+                map_->similar_frame_id_ = result.train_id;
                 map_->loop_corrected_= true;
                 std::puts("corrected!");
             }

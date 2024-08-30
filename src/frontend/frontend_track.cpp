@@ -122,3 +122,88 @@ Sophus::SE3d Frontend::Optimize(OptimizeInfo info)
 
     return vertex_pose->estimate();
 }
+
+void Frontend::OptimizeMP(OptimizeInfo info)
+{
+    g2o::SparseOptimizer optimizer;
+    using BlockSolver = g2o::BlockSolver_6_3;
+    using LinearSolver = g2o::LinearSolverDense<BlockSolver::PoseMatrixType>;
+    auto solver = g2o::make_unique<BlockSolver>(g2o::make_unique<LinearSolver>());
+    auto algorithm = new g2o::OptimizationAlgorithmLevenberg(std::move(solver));
+    optimizer.setAlgorithm(algorithm);
+
+    auto vertex_pose = new VertexPose;
+    vertex_pose->setId(0);
+
+    vertex_pose->setEstimate(info.pose);
+    vertex_pose->setFixed(true);
+    optimizer.addVertex(vertex_pose);
+
+
+    // edges
+    int index = 1;
+    double chi2_th = 5.891;
+    std::vector<EdgePoseXYZ *> edges;
+    std::unordered_map<unsigned long, VertexXYZ *> vertices_mps;
+    std::unordered_map<unsigned long, std::shared_ptr<MapPoint>> mps;
+    std::unordered_map<EdgePoseXYZ *, std::weak_ptr<MapPoint>> edges_and_mps;
+    for(auto feature:info.features){
+        std::shared_ptr<MapPoint> map_point = feature->map_point_.lock();
+        if(!map_point){
+            std::cout<<"map point is outlier"<<std::endl;   
+            continue;
+        }
+        VertexXYZ *v = new VertexXYZ;
+        v->setEstimate(map_point->Pos());
+        v->setId(1 + map_point->id_); /// avoid vertex id equal
+        v->setMarginalized(true);
+        vertices_mps.insert({map_point->id_, v});
+        mps.insert({map_point->id_, map_point});
+
+        auto pt = feature->pt;
+        auto edge = new EdgePoseXYZ(info.K, info.cam_pose);
+        edge->setId(index);
+        edge->setVertex(0,vertex_pose);
+        edge->setVertex(1,v);
+        edge->setMeasurement(Eigen::Vector2d(pt.x, pt.y));
+        edge->setInformation(Eigen::Matrix2d::Identity());
+        auto rk = new g2o::RobustKernelHuber();
+        rk->setDelta(chi2_th);
+        edge->setRobustKernel(rk);
+        edges_and_mps.insert({edge, feature->map_point_});
+
+        edges.emplace_back(edge);
+        optimizer.addEdge(edge);
+        index++;
+    }
+
+    // optimize
+    int cnt_outlier = 0, cnt_inlier = 0;
+    int iteration = 0;
+
+    while (iteration < 5){
+        optimizer.initializeOptimization();
+        optimizer.optimize(10);
+        cnt_outlier = 0;
+        cnt_inlier = 0;
+        // determine if we want to adjust the outlier threshold
+        for (auto &em : edges_and_mps){
+            if (em.first->chi2() > chi2_th){
+                cnt_outlier++;
+            }else{
+                cnt_inlier++;
+            }
+        }
+        double inlier_ratio = cnt_inlier / double(cnt_inlier + cnt_outlier);
+        if (inlier_ratio > 0.7){
+            break;
+        }else{
+            // chi2_th *= 2;
+            iteration++;
+        }
+    }
+
+    for (auto &v : vertices_mps){
+        mps.at(v.first)->SetPosition(v.second->estimate());
+    }
+}

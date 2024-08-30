@@ -1,12 +1,17 @@
 #include "backend.h"
 #include "g2o_types.hpp"
+#include "key_frame.h"
 #include "map_point.h"
+#include <cstddef>
+#include <cstdio>
 #include <g2o/core/optimization_algorithm_levenberg.h>
 #include <g2o/core/robust_kernel_impl.h>
 #include <g2o/core/sparse_optimizer.h>
 #include <g2o/core/block_solver.h>
 #include <g2o/core/linear_solver.h>
 #include <g2o/solvers/csparse/linear_solver_csparse.h>
+#include <g2o/solvers/eigen/linear_solver_eigen.h>
+#include <iostream>
 #include <memory>
 
 void Backend::Run()
@@ -18,6 +23,11 @@ void Backend::Run()
             map_->loop_closing_finished_.acquire();
         }
         OptimizeMap();
+
+        // if(map_->loop_corrected_){
+        //     PoseGraphOptimization();
+        //     map_->loop_corrected_=false;
+        // }
 
         map_->backend_finished_.release();
     }
@@ -146,3 +156,78 @@ void Backend::SetMap(const Map::Ptr map)
     map_ = map;
     map_->backend_thread_ = true;
 }
+
+void Backend::PoseGraphOptimization()
+{
+    using BlockSolverType = g2o::BlockSolver<g2o::BlockSolverTraits<6, 6>>;
+    using LinearSolverType = g2o::LinearSolverEigen<BlockSolverType::PoseMatrixType>;
+    auto solver = new g2o::OptimizationAlgorithmLevenberg(
+        g2o::make_unique<BlockSolverType>(g2o::make_unique<LinearSolverType>()));
+    g2o::SparseOptimizer optimizer;
+    optimizer.setAlgorithm(solver);
+
+    Map::KeyFrames allKFs = map_->GetAllKeyFrames();
+
+    // vertices
+    std::map<unsigned long, VertexPose *> vertices_kf;
+    while(true){
+        static std::shared_ptr<KeyFrame> kf;
+        if(kf == nullptr){
+            kf = map_->current_keyframe_;
+        }
+        auto id = kf->Id();
+        std::cout<< "id" << id << std::endl;
+
+        VertexPose *vertex_pose = new VertexPose();
+        vertex_pose->setId(kf->key_frame_id_);
+        vertex_pose->setEstimate(kf->Pose());
+        vertex_pose->setMarginalized(false);
+        if ( id == map_->loop_frame_id_ || id == map_->similar_frame_id_){
+            vertex_pose->setFixed(true);
+        }
+        optimizer.addVertex(vertex_pose);
+        vertices_kf.insert({kf->key_frame_id_, vertex_pose});
+
+        if(kf->last_key_frame_.expired()){
+            kf = nullptr;
+            break;
+        } else {
+            kf = kf->last_key_frame_.lock();
+        }
+    }
+
+    // edges
+    int index = 0;
+    while(true){
+        static std::shared_ptr<KeyFrame> kf;
+        if(kf == nullptr){
+            kf = map_->current_keyframe_;
+        }
+        EdgePoseGraph *edge = new EdgePoseGraph();
+        edge->setId(index);
+        edge->setVertex(0, vertices_kf.at(kf->Id()));
+        edge->setVertex(1, vertices_kf.at(kf->last_key_frame_.lock()->Id()));
+        edge->setMeasurement(kf->relative_pose_to_last_KF_);
+        edge->setInformation(Eigen::Matrix<double, 6, 6>::Identity());
+        optimizer.addEdge(edge);
+        index++;
+        kf = kf->last_key_frame_.lock();
+        if(kf->last_key_frame_.expired()){
+            kf = nullptr;
+            break;
+        } else {
+            kf = kf->last_key_frame_.lock();
+        }
+    }
+    // do the optimization
+    optimizer.initializeOptimization();
+    optimizer.optimize(20);
+
+    std::puts("pose graph optimization finished");
+
+    // set the KFs' optimized poses
+    for (auto &v : vertices_kf){
+        allKFs.at(v.first)->SetPose(v.second->estimate());
+    }
+
+} // mutex

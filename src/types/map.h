@@ -38,6 +38,8 @@ public:
     unsigned long loop_frame_id_{0};
     bool loop_corrected_{false};
 
+    unsigned long similar_frame_id_{0};
+
     std::shared_ptr<KeyFrame> current_keyframe_{nullptr};
 
     std::shared_ptr<Camera> left_camera_;

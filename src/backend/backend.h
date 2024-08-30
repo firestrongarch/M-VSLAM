@@ -12,6 +12,7 @@ public:
     void Run();
 
     void OptimizeMap();
+    void PoseGraphOptimization();
 
 private:
     Map::Ptr map_;

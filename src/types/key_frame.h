@@ -2,6 +2,7 @@
 #include "frame_base.h"
 #include "feature.h"
 #include "frame.h"
+#include <memory>
 #include <mutex>
 
 class KeyFrame:public FrameBase
@@ -22,6 +23,10 @@ public:
 
     cv::Mat left_image_;
     std::vector<std::shared_ptr<Feature>> features_left_;
+
+    std::weak_ptr<KeyFrame> last_key_frame_;
+    Sophus::SE3d relative_pose_to_last_KF_;
+    Sophus::SE3d relative_pose_to_loop_KF_;
 
     // 与回环产生数据竞争
     std::mutex mutex_features_left_;
