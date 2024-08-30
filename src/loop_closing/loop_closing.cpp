@@ -5,30 +5,31 @@
 #include <memory>
 #include <opencv2/core/types.hpp>
 #include <vector>
-#include "frontend.h"
 #include <opencv2/core/eigen.hpp>
+#include "frontend.h"
+#include "g2o_types.hpp"
 void LoopClosing::Run()
 {
     // Creating the loop closure detector object
     ibow_lcd::LCDetectorParams params;  // Assign desired parameters
     ibow_lcd::LCDetector lcdet(params);
     cv::Ptr<cv::Feature2D> detector = cv::ORB::create(300);
-    while(true)
+    while(map_->loop_closing_thread_)
     {
         map_->loop_closing_start_.acquire();
-        auto keyframe = map_->current_keyframe_;
-
+        auto kf = map_->current_keyframe_;
         std::vector<cv::KeyPoint> kps;
-        for(auto& feature : keyframe->features_left_){
+        for(auto& feature : kf->features_left_){
             kps.push_back(*feature);
         }
-        
         ibow_lcd::LCDetectorResult result;
         cv::Mat descs;
-        detector->compute(keyframe->left_image_, kps, descs);
-        lcdet.process(keyframe->Id(), kps, descs, &result);
+        detector->compute(kf->left_image_, kps, descs);
+        lcdet.process(kf->Id(), kps, descs, &result);
         switch (result.status) {
         case ibow_lcd::LC_DETECTED:{
+            map_->loop_frame_id_ = kf->Id();
+            map_->similar_frame_id_ = result.train_id;
             auto KFs = map_->GetAllKeyFrames();
             std::vector<Feature::Ptr> features;
             auto prev_features = KFs.at(result.train_id)->features_left_;
@@ -36,7 +37,7 @@ void LoopClosing::Run()
                 .prev_features = prev_features, 
                 .next_features = features, 
                 .prev_img = KFs.at(result.train_id)->left_image_, 
-                .next_img = KFs.at(keyframe->Id())->left_image_
+                .next_img = KFs.at(kf->Id())->left_image_
             });
 
             if(inliners > 300){
@@ -46,18 +47,22 @@ void LoopClosing::Run()
                     .pose = ComputeCorrectPose(features),
                     .K = map_->left_camera_->GetK()
                 });
-                keyframe->SetPose(pose);
-                Frontend::OptimizeMP({
-                    .features = keyframe->features_left_,
-                    .pose = keyframe->Pose(),
-                    .K = map_->left_camera_->GetK(),
-                    .cam_pose = map_->left_camera_->GetPose()
-                });
-                keyframe->relative_pose_to_loop_KF_ = KFs.at(result.train_id)->Pose() * keyframe->Pose().inverse();
-                map_->loop_frame_id_ = keyframe->Id();
+            
+                for(auto feature : kf->features_left_){
+                    auto mp = feature->map_point_.lock();
+                    Eigen::Vector3d posCamera = kf->Pose() * mp->Pos();
+                    mp->SetPosition(pose.inverse() * posCamera);
+                }
+
+                kf->SetPose(pose);
+                kf->relative_pose_to_loop_KF_ = kf->Pose().inverse() * KFs.at(result.train_id)->Pose().inverse() ;
+                map_->loop_frame_id_ = kf->Id();
                 map_->similar_frame_id_ = result.train_id;
+
+                PoseGraphOptimization();
+
                 map_->loop_corrected_= true;
-                std::puts("corrected!");
+                map_->loop_closing_thread_ = false;
             }
             break;
         }
@@ -101,3 +106,81 @@ Sophus::SE3d LoopClosing::ComputeCorrectPose(std::vector<std::shared_ptr<Feature
 
     return pose;
 }
+
+void LoopClosing::PoseGraphOptimization()
+{
+    using BlockSolverType = g2o::BlockSolver<g2o::BlockSolverTraits<6, 6>>;
+    using LinearSolverType = g2o::LinearSolverEigen<BlockSolverType::PoseMatrixType>;
+    auto solver = new g2o::OptimizationAlgorithmLevenberg(
+        g2o::make_unique<BlockSolverType>(g2o::make_unique<LinearSolverType>()));
+    g2o::SparseOptimizer optimizer;
+    optimizer.setAlgorithm(solver);
+
+    Map::KeyFrames allKFs = map_->GetAllKeyFrames();
+
+    // vertices
+    std::map<unsigned long, VertexPose *> vertices_kf;
+    std::shared_ptr<KeyFrame> kf = map_->current_keyframe_;
+    while(true){
+        auto id = kf->Id();
+        VertexPose *vertex_pose = new VertexPose();
+        vertex_pose->setId(kf->key_frame_id_);
+        vertex_pose->setEstimate(kf->Pose());
+        vertex_pose->setMarginalized(false);
+        if ( id == map_->loop_frame_id_ || id == map_->similar_frame_id_ || id==0){
+            vertex_pose->setFixed(true);
+        }
+        optimizer.addVertex(vertex_pose);
+        vertices_kf.insert({kf->key_frame_id_, vertex_pose});
+
+        if(kf->last_key_frame_.expired()){
+            break;
+        }
+        kf = kf->last_key_frame_.lock();
+    }
+
+    // edges
+    int index = 0;
+    kf = map_->current_keyframe_;
+    while(true){
+        if(kf->last_key_frame_.expired()){
+            break;
+        }
+
+        if(kf == map_->current_keyframe_){
+            auto similar_frame = allKFs.at(map_->similar_frame_id_);
+            EdgePoseGraph *edge = new EdgePoseGraph();
+            edge->setId(index);
+            edge->setVertex(0, vertices_kf.at(kf->Id()));
+            edge->setVertex(1, vertices_kf.at(similar_frame->Id()));
+            edge->setMeasurement(kf->relative_pose_to_last_KF_);
+            edge->setInformation(Eigen::Matrix<double, 6, 6>::Identity());
+            optimizer.addEdge(edge);
+            index++;
+        }
+
+        EdgePoseGraph *edge = new EdgePoseGraph();
+        edge->setId(index);
+        edge->setVertex(0, vertices_kf.at(kf->Id()));
+        edge->setVertex(1, vertices_kf.at(kf->last_key_frame_.lock()->Id()));
+        edge->setMeasurement(kf->relative_pose_to_last_KF_);
+        edge->setInformation(Eigen::Matrix<double, 6, 6>::Identity());
+        optimizer.addEdge(edge);
+        index++;
+
+        kf = kf->last_key_frame_.lock();
+    }
+
+    std::puts("pose graph optimization start");
+    // do the optimization
+    optimizer.initializeOptimization();
+    optimizer.optimize(20);
+
+    std::puts("pose graph optimization finished");
+
+    // set the KFs' optimized poses
+    for (auto &v : vertices_kf){
+        allKFs.at(v.first)->SetPose(v.second->estimate());
+    }
+
+} // mutex

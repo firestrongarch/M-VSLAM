@@ -24,16 +24,16 @@ int main(int argc, char const *argv[])
     auto file = cv::FileStorage("../config/kitti_00.yaml",
                                       cv::FileStorage::READ);
     Frontend frontend;
-    Backend backend;
+    // Backend backend;
     LoopClosing loop_closing;
 
     Map::Ptr map = std::make_shared<Map>();
     UiPangolin::Ptr ui_pangolin = std::make_shared<UiPangolin>();
     ui_pangolin->SetMap(map);
-    backend.SetMap(map);
+    // backend.SetMap(map);
     loop_closing.SetMap(map);
     auto ui_pangolin_thread = std::thread(&UiPangolin::Run,ui_pangolin);
-    auto backend_thread = std::thread(&Backend::Run,backend);
+    // auto backend_thread = std::thread(&Backend::Run,backend);
     auto loop_closing_thread = std::thread(&LoopClosing::Run,loop_closing);
 
     frontend.SetUiPangolin(ui_pangolin);
@@ -80,9 +80,9 @@ int main(int argc, char const *argv[])
     ui_pangolin->SaveTrajectoryTUM();
     std::puts("Finished!");
 
-    backend_thread.join();
+    // backend_thread.join();
     ui_pangolin_thread.join();
-    loop_closing_thread.join();
+    loop_closing_thread.join(); ui_pangolin_thread.join();
     return 0;
 }
 

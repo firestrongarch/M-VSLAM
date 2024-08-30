@@ -1,7 +1,6 @@
 #include "frontend.h"
 #include "frontend_template.hpp"
 #include <memory>
-#include <mutex>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
@@ -32,7 +31,6 @@ void Frontend::Track()
     // current_frame_->SetPose(relative_kf_ * last_frame_->Pose() );
     current_frame_->SetPose(relative_kf_ * map_->current_keyframe_->Pose() );
     // step1 跟踪上一帧
-    std::unique_lock lock{map_->current_keyframe_->mutex_features_left_};
     OpticalFlow({
         .prev_features = last_frame_->features_left_, 
         .next_features = current_frame_->features_left_, 
@@ -58,7 +56,6 @@ void Frontend::Track()
         .pose = current_frame_->Pose(),
         .K = map_->left_camera_->GetK()
     }));
-    lock.unlock();
 
     // T_cc = T_cw * T_wc
     relative_motion_ = current_frame_->Pose() * last_frame_->Pose().inverse();
@@ -66,6 +63,14 @@ void Frontend::Track()
 
     // step2 在当前帧中补充更多特征点
     if(current_frame_->features_left_.size() < 100){
+        if(map_->backend_thread_){
+            map_->backend_finished_.acquire();
+            current_frame_->SetPose(Optimize({
+                .features = current_frame_->features_left_,
+                .pose = current_frame_->Pose(),
+                .K = map_->left_camera_->GetK()
+            }));
+        }
         DetectFeatures({
             .img = current_frame_->left_image_, 
             .features = current_frame_->features_left_
@@ -85,7 +90,7 @@ void Frontend::Track()
         });
 
         auto key_frame = std::make_shared<KeyFrame>(current_frame_);
-        key_frame->relative_pose_to_last_KF_ = relative_kf_.inverse();
+        key_frame->relative_pose_to_last_KF_ = relative_kf_;
         map_->InsertKeyFrame(key_frame);
         relative_kf_ = relative_motion_;
     }

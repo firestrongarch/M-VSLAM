@@ -33,8 +33,6 @@ public:
     };
     static Sophus::SE3d Optimize(OptimizeInfo info);
 
-    static void OptimizeMP(OptimizeInfo info);
-
 private:                
     bool Init();
     bool InitMap();

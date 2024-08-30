@@ -1,12 +1,14 @@
 #include "map.h"
 #include <cstdio>
-#include <mutex>
 #include <opencv2/highgui.hpp>
 
 void Map::InsertKeyFrame(std::shared_ptr<KeyFrame> key_frame)
 {
-    if(backend_thread_){
-        backend_finished_.acquire();
+    // if(backend_thread_){
+    //     backend_finished_.acquire();
+    // }
+    if(loop_closing_thread_){
+        loop_closing_finished_.acquire();
     }
 
     if(current_keyframe_){
