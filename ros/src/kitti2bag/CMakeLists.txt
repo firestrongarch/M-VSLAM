@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(slam)
+project(kitti2bag)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -9,16 +9,16 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(slam_msg REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+find_package(example_interfaces REQUIRED)
 
-find_package(M_VSLAM REQUIRED)
-
-add_executable(slam slam.cpp)
-target_link_libraries(slam M_VSLAM::M_VSLAM)
-ament_target_dependencies(slam rclcpp std_msgs sensor_msgs cv_bridge)
+add_executable(kitti2bag kitti2bag.cpp)
+ament_target_dependencies(kitti2bag rclcpp std_msgs sensor_msgs cv_bridge slam_msg OpenCV rosbag2_cpp example_interfaces)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
